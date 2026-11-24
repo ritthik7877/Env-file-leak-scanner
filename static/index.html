@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b1020">
+    <title>LeakLens — Env File Leak Scanner</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="LeakLens home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>LeakLens</span>
+        </a>
+        <span class="privacy"><span class="privacy-dot"></span> Nothing is stored. Secrets are masked.</span>
+      </header>
+
+      <section class="intro">
+        <p class="eyebrow">SECRET EXPOSURE CHECK</p>
+        <h1>Find leaks before they find you.</h1>
+        <p class="lede">Scan a config file, pasted snippet, or public GitHub repository for exposed credentials.</p>
+      </section>
+
+      <section class="card scanner-card" aria-labelledby="scan-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">NEW SCAN</p>
+            <h2 id="scan-title">Choose a source</h2>
+          </div>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Scan source">
+          <button class="tab active" id="tab-text" role="tab" aria-selected="true" aria-controls="panel-text" data-mode="text">Paste text</button>
+          <button class="tab" id="tab-file" role="tab" aria-selected="false" aria-controls="panel-file" data-mode="file">Upload a file</button>
+          <button class="tab" id="tab-repo" role="tab" aria-selected="false" aria-controls="panel-repo" data-mode="repo">GitHub repo</button>
+        </div>
+
+        <form id="scan-form">
+          <div class="tab-panel" id="panel-text" role="tabpanel" aria-labelledby="tab-text">
+            <label for="filename">File name <span class="optional">(optional)</span></label>
+            <input id="filename" name="filename" type="text" value="pasted.txt" maxlength="255">
+            <label for="content">Paste configuration or source</label>
+            <textarea id="content" name="content" rows="9" placeholder="API_KEY=...&#10;DATABASE_URL=..." spellcheck="false"></textarea>
+          </div>
+          <div class="tab-panel hidden" id="panel-file" role="tabpanel" aria-labelledby="tab-file" hidden>
+            <label for="file">Choose a file <span class="optional">.env, .txt, .json, .yml, .py, .js · max 1 MB</span></label>
+            <input id="file" name="file" type="file" accept=".env,.txt,.json,.yml,.py,.js">
+            <p class="hint">The file is scanned in memory and is not saved.</p>
+          </div>
+          <div class="tab-panel hidden" id="panel-repo" role="tabpanel" aria-labelledby="tab-repo" hidden>
+            <label for="repo-url">Public GitHub repository URL</label>
+            <input id="repo-url" name="repo_url" type="url" placeholder="https://github.com/owner/repository">
+            <p class="hint">Only common configuration files are checked (up to 20 files). Private repositories are not supported.</p>
+          </div>
+          <div class="form-footer">
+            <p class="hint"><span class="shield" aria-hidden="true">◇</span> Scans run in memory. Full secret values are never returned.</p>
+            <button class="button primary" id="scan-button" type="submit"><span>Scan for secrets</span><span aria-hidden="true">→</span></button>
+          </div>
+        </form>
+        <div id="error-message" class="message error" role="alert" hidden></div>
+      </section>
+
+      <section id="results" class="results" aria-live="polite" hidden>
+        <div class="results-heading">
+          <div>
+            <p class="eyebrow">SCAN REPORT</p>
+            <h2>Results</h2>
+          </div>
+          <button class="button secondary" id="download-button" type="button">↓ <span>Download JSON</span></button>
+        </div>
+        <div class="overview-grid">
+          <article class="card risk-card">
+            <div class="risk-top">
+              <div><p class="eyebrow">OVERALL RISK</p><p class="risk-caption" id="risk-caption">No issues found</p></div>
+              <div class="risk-value"><span id="risk-value">0</span><small>/100</small></div>
+            </div>
+            <div class="risk-track" role="progressbar" aria-label="Risk score" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <span id="risk-bar"></span>
+            </div>
+            <p class="hint" id="files-scanned">0 files scanned</p>
+          </article>
+          <article class="card summary-card">
+            <p class="eyebrow">FINDINGS BY SEVERITY</p>
+            <div class="severity-counts" id="severity-counts"></div>
+          </article>
+        </div>
+        <div class="card findings-card">
+          <div class="findings-heading">
+            <div><h3>Detected secrets</h3><span class="hint" id="finding-count"></span></div>
+          </div>
+          <div id="empty-state" class="empty-state" hidden>
+            <span class="empty-icon" aria-hidden="true">✓</span>
+            <h3>No secrets found</h3>
+            <p>No matching secret patterns were detected in this scan.</p>
+          </div>
+          <div class="table-wrap" id="table-wrap">
+            <table>
+              <thead><tr><th>FILE / LINE</th><th>SECRET TYPE</th><th>SEVERITY</th><th>MASKED PREVIEW</th><th>HOW TO FIX</th></tr></thead>
+              <tbody id="findings-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+      <footer class="footer">LeakLens <span>·</span> Local-first secret scanning</footer>
+    </main>
+    <div id="loading" class="loading-overlay" hidden><div class="spinner" aria-hidden="true"></div><p>Scanning safely…</p></div>
+    <script src="/static/script.js" defer></script>
+  </body>
+</html>
